@@ -1,0 +1,30 @@
+<html>
+<head>
+<tittle>Hello Mustache</tittle>
+</head>
+<body>
+<h2> Mustache </h2>
+
+ <p> User ID = {{user.id}} </p>
+ <p> User Name = {{user.name}} </p>
+
+ <hr/>
+
+ {{#listas}}
+  <ul>
+   <li> {{.}} </li>
+  </ul>
+ {{/listas}}
+
+<hr/>
+
+ {{#mapArray}}
+
+    {{#tittle}}
+    <p> {{.}} </p>
+    {{/tittle}}
+
+ {{/mapArray}}
+
+</body>
+</html>
