@@ -5,7 +5,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 
 fun Route.phoneRouting() {
-    get ("/phones") {
+    get ("/api/phones") {
         call.respondText("Phones")
     }
 }
