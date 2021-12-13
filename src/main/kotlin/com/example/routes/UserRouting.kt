@@ -1,6 +1,9 @@
 package com.example.routes
 
+import com.example.DTO.UserParametersRequestDTO
+import com.example.DTO.validationUserResponse
 import com.example.model.User
+import com.example.utils.validationHelper
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.request.*
@@ -8,28 +11,48 @@ import io.ktor.response.*
 import io.ktor.routing.*
 
 fun Route.userRouting() {
-    get ("/api/users") {
-        call.response.status(HttpStatusCode.OK)
-        call.respond(mapOf("users" to users))
-    }
+    route("api/users") {
 
-    post ("api/users/create/parameters") {
-        val id = checkNotNull(call.request.queryParameters["id"])
-        val name = checkNotNull(call.request.queryParameters["name"])
-        val surname = checkNotNull(call.request.queryParameters["surname"])
-        val userCreate = User(id.toInt(), name, surname)
+        get {
+            call.response.status(HttpStatusCode.OK)
+            call.respond(mapOf("users" to users))
+        }
 
-        users.add(userCreate)
+        get("{id}") {
+            val userId = checkNotNull(call.parameters["id"])
+            val userRespond = users.find { it.id == userId.toInt() } ?: return@get call.respondText("User not found",
+                status = HttpStatusCode.NotFound)
+        }
 
-        call.response.status(HttpStatusCode.OK)
-        call.respond(mapOf("users" to users))
-    }
+        post("/create/parameters") {
+            val id = checkNotNull(call.request.queryParameters["id"])
+            val name = checkNotNull(call.request.queryParameters["name"])
+            val surname = checkNotNull(call.request.queryParameters["surname"])
 
-    post ("api/users/create/body") {
-        users += call.receive<User>()
+            validationHelper(validationUserResponse, UserParametersRequestDTO(id, name, surname))
+            val userCreate = User(id.toInt(), name, surname)
 
-        call.response.status(HttpStatusCode.OK)
-        call.respond(mapOf("users" to users))
+            users.add(userCreate)
+
+            call.response.status(HttpStatusCode.OK)
+            call.respond(mapOf("users" to users))
+        }
+
+        post("/create/body") {
+            users += call.receive<User>()
+
+            call.response.status(HttpStatusCode.OK)
+            call.respond(mapOf("users" to users))
+        }
+
+        delete("{id}/delete") {
+            val userId = checkNotNull(call.parameters["id"])
+            if (users.removeIf {it.id == userId.toInt()}) {
+                call.respondText("User deleted with id $userId", status = HttpStatusCode.Accepted)
+            } else {
+                call.respondText("User with id - $userId", status = HttpStatusCode.NotFound)
+            }
+        }
     }
 }
 
